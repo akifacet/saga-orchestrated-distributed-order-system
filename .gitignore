@@ -1,0 +1,38 @@
+# Build outputs
+target/
+build/
+*.jar
+*.war
+*.class
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+pom.xml.tag
+pom.xml.releaseBackup
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+.springBeans
+.sts4-cache
+.apt_generated
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment / secrets (do not commit real credentials)
+.env
+.env.local
+*.env

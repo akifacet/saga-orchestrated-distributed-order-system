@@ -1,0 +1,137 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.2
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.2
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+
+  order-service:
+    build:
+      context: ./order-service
+    container_name: order-service
+    depends_on:
+      - kafka
+      - order-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-db:5432/order_db
+      SPRING_DATASOURCE_USERNAME: order_user
+      SPRING_DATASOURCE_PASSWORD: order_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8081:8081"
+
+  payment-service:
+    build:
+      context: ./payment-service
+    container_name: payment-service
+    depends_on:
+      - kafka
+      - payment-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/payment_db
+      SPRING_DATASOURCE_USERNAME: payment_user
+      SPRING_DATASOURCE_PASSWORD: payment_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8082:8082"
+
+  inventory-service:
+    build:
+      context: ./inventory-service
+    container_name: inventory-service
+    depends_on:
+      - kafka
+      - inventory-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://inventory-db:5432/inventory_db
+      SPRING_DATASOURCE_USERNAME: inventory_user
+      SPRING_DATASOURCE_PASSWORD: inventory_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8083:8083"
+
+  shipping-service:
+    build:
+      context: ./shipping-service
+    container_name: shipping-service
+    depends_on:
+      - kafka
+      - shipping-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://shipping-db:5432/shipping_db
+      SPRING_DATASOURCE_USERNAME: shipping_user
+      SPRING_DATASOURCE_PASSWORD: shipping_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8084:8084"
+
+  order-db:
+    image: postgres:15
+    container_name: order-db
+    environment:
+      POSTGRES_USER: order_user
+      POSTGRES_PASSWORD: order_pass
+      POSTGRES_DB: order_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - order-data:/var/lib/postgresql/data
+
+  payment-db:
+    image: postgres:15
+    container_name: payment-db
+    environment:
+      POSTGRES_USER: payment_user
+      POSTGRES_PASSWORD: payment_pass
+      POSTGRES_DB: payment_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - payment-data:/var/lib/postgresql/data
+
+  inventory-db:
+    image: postgres:15
+    container_name: inventory-db
+    environment:
+      POSTGRES_USER: inventory_user
+      POSTGRES_PASSWORD: inventory_pass
+      POSTGRES_DB: inventory_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - inventory-data:/var/lib/postgresql/data
+
+  shipping-db:
+    image: postgres:15
+    container_name: shipping-db
+    environment:
+      POSTGRES_USER: shipping_user
+      POSTGRES_PASSWORD: shipping_pass
+      POSTGRES_DB: shipping_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - shipping-data:/var/lib/postgresql/data
+
+volumes:
+  order-data:
+  payment-data:
+  inventory-data:
+  shipping-data:
